@@ -8,6 +8,29 @@ Q = require 'q'
 coffee = require 'coffee-script'
 
 config = require './config'
+prod = process.env.NODE_ENV is 'production'
+
+prettifyUrl = (uglyUrl)->
+    oldUrlObj = url.parse uglyUrl
+    queryObj = querystring.parse oldUrlObj.query
+    escapedFragment = ''
+    if queryObj._escaped_fragment_?
+        if queryObj._escaped_fragment_
+            escapedFragment = '#!' + queryObj._escaped_fragment_;
+        delete queryObj['_escaped_fragment_']
+    else
+        return uglyUrl
+
+    newUrlObj =
+        protocol: oldUrlObj.protocol,
+        slash: oldUrlObj.slash,
+        host: oldUrlObj.host,
+        port: oldUrlObj.port,
+        hostname: oldUrlObj.hostname,
+        hash: escapedFragment,
+        query: queryObj,
+        pathname: oldUrlObj.pathname
+    url.format newUrlObj
 
 
 __ph = null
@@ -75,7 +98,8 @@ open = (page, targetUrl)->
                 do evalPageBody
             when 'LOG'
                 # TODO: Accept logging from client side
-                do ->
+                do -> # noop
+
     page.set 'onResourceReceived', (response)->
         if not isFirstResourceRecieved
             return
@@ -116,14 +140,19 @@ app
 .use (next)->
     tartgetUrl = @request.url.substr 1, @request.url.length
     urlObj = url.parse tartgetUrl
+    if not prod
+        @tartgetUrl = prettifyUrl tartgetUrl
+        yield next
+        return
+
     for reg in config.hostsWhiteListed
         if reg.test urlObj.host
-            @tartgetUrl = tartgetUrl
+            @tartgetUrl = prettifyUrl tartgetUrl
             yield next
             return
 
     @status = 400
-    return
+
 
 .use (next)->
     if not @tartgetUrl
@@ -141,7 +170,7 @@ app
 
     yield next
 
-app.listen process.env.PORT || 3000
+app.listen process.env.PORT || 3001
 
 process.on 'SIGINT', ->
     # destroy PhantomJS instance safely
