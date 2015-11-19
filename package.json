@@ -1,16 +1,16 @@
 {
   "private": true,
   "scripts": {
-    "start": "pm2 start bootstrap.js --watch --node-args \"--harmony\" --name enda-seo",
-    "prod": "pm2 start bootstrap.js --node-args \"--harmony\" --name enda-seo",
-    "stop": "pm2 stop enda-seo"
+    "start": "pm2 start bootstrap.js --watch --node-args \"--harmony\" --name enda-seo"
   },
   "dependencies": {
-    "aa": "^0.1.32",
     "coffee-script": "^1.10.0",
     "koa": "^1.1.2",
     "phantom": "^0.8.3",
-    "q": "^1.4.1",
-    "thunkify": "^2.1.2"
+    "q": "^1.4.1"
+  },
+  "engines": {
+    "node": "4.x",
+    "npm": "2.x"
   }
 }
