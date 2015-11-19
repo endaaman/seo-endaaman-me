@@ -110,6 +110,7 @@ app
         yield next
         return
     src = yield Q.nfcall fs.readFile, 'public/client.coffee', 'utf-8'
+    @type = 'application/javascript'
     @body = coffee.compile src
 
 .use (next)->
@@ -140,7 +141,7 @@ app
 
     yield next
 
-app.listen 3000
+app.listen process.env.PORT || 3000
 
 process.on 'SIGINT', ->
     # destroy PhantomJS instance safely
