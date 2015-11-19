@@ -35,6 +35,7 @@ createPage = (ph)->
 open = (page, targetUrl)->
     deferred = do Q.defer
 
+    isFirstResourceRecieved = true
     finished = false
     result =
         status: 400
@@ -47,7 +48,6 @@ open = (page, targetUrl)->
             return
         finished = true
         deferred.resolve result
-    isFirstResourceRecieved = true
 
     evalPageBody = ->
         # abort here as well for performace
