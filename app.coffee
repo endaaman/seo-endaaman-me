@@ -95,10 +95,10 @@ open = (page, targetUrl)->
 
             when 'FINISH'
                 # TODO: Accept status overwritten (ex. manually set 404, 403, etc)
+                console.log data
+                if typeof data.status is 'number'
+                    result.status = data.status
                 do evalPageBody
-            when 'LOG'
-                # TODO: Accept logging from client side
-                do -> # noop
 
     page.set 'onResourceReceived', (response)->
         if not isFirstResourceRecieved
@@ -127,8 +127,6 @@ open = (page, targetUrl)->
 
 
 app = koa()
-
-app
 .use (next)->
     if @request.path isnt '/client.js'
         yield next
@@ -141,13 +139,13 @@ app
     tartgetUrl = @request.url.substr 1, @request.url.length
     urlObj = url.parse tartgetUrl
     if not prod
-        @tartgetUrl = prettifyUrl tartgetUrl
+        @targetUrl = prettifyUrl tartgetUrl
         yield next
         return
 
     for reg in config.hostsWhiteListed
         if reg.test urlObj.host
-            @tartgetUrl = prettifyUrl tartgetUrl
+            @targetUrl = prettifyUrl tartgetUrl
             yield next
             return
 
@@ -155,12 +153,12 @@ app
 
 
 .use (next)->
-    if not @tartgetUrl
+    if not @targetUrl
         yield next
         return
     ph = yield initPhantom()
     page = yield createPage ph
-    result = yield open page, @tartgetUrl
+    result = yield open page, @targetUrl
 
     @type = result.type
     @status = result.status
@@ -168,6 +166,7 @@ app
     for k, v of result.custom
         @set k, v
 
+    console.log "#{@status}: #{@targetUrl}"
     yield next
 
 app.listen process.env.PORT || 3001
